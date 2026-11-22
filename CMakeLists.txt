@@ -43,8 +43,13 @@ target_compile_definitions(GoaMidiArchitect PUBLIC
     JUCE_VST3_CAN_REPLACE_VST2=0
 )
 
+target_link_directories(GoaMidiArchitect PRIVATE
+    "${CMAKE_BINARY_DIR}/../packages/Microsoft.Web.WebView2/build/native/x64"
+)
+
 target_link_libraries(GoaMidiArchitect PRIVATE
     GoaMidiArchitectData
+    WebView2LoaderStatic.lib
     juce::juce_audio_utils
     juce::juce_gui_extra
     PUBLIC
