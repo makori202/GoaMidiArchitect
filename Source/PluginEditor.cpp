@@ -40,7 +40,7 @@ GoaMidiArchitectEditor::GoaMidiArchitectEditor(GoaMidiArchitectProcessor& p)
     webView->goToURL(juce::URL(tempHtml).toString(false));
 
     setResizable(true, true);
-    setSize(1240, 760);
+    setSize(1220, 720);
 }
 
 void GoaMidiArchitectEditor::resized() {

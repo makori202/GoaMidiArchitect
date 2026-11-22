@@ -6,6 +6,7 @@
 struct StepCell {
     std::vector<int> notes;
     int vel = 100;
+    int len = 1;
 };
 
 struct PatternData {
@@ -14,6 +15,7 @@ struct PatternData {
     int spb = 16;
     int gatePct = 45;
     int swingPct = 0;
+    int humanizePct = 10;
     bool freeRun = false;
     bool isPad = false;
     std::vector<StepCell> steps;
@@ -55,7 +57,7 @@ private:
     double currentSampleRate = 44100.0;
     double freeRunBeatPos = 0.0;
     int lastTriggeredStep = -1;
-    std::vector<std::pair<int, int>> activeNotes; // (midiNote, remainingSamples)
+    std::vector<std::pair<int, int>> activeNotes;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(GoaMidiArchitectProcessor)
 };

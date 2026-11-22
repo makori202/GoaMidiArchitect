@@ -6,11 +6,11 @@ GoaMidiArchitectProcessor::GoaMidiArchitectProcessor()
         .withInput("Input", juce::AudioChannelSet::stereo(), true)
         .withOutput("Output", juce::AudioChannelSet::stereo(), true)) {
     pattern.steps.resize(32);
-    // Default KBBB F-Phrygian Bass pattern so MIDI Out works immediately on load
     for (int i = 0; i < 32; ++i) {
         if (i % 4 != 0) {
             pattern.steps[(size_t)i].notes = { (i >= 28) ? 53 : 41 };
             pattern.steps[(size_t)i].vel = 100;
+            pattern.steps[(size_t)i].len = 1;
         }
     }
 }
@@ -47,8 +47,10 @@ void GoaMidiArchitectProcessor::updatePatternFromJson(const juce::String& jsonTe
     next.spb = juce::jlimit(4, 32, (int)p.getProperty("spb", 16));
     next.gatePct = juce::jlimit(10, 100, (int)p.getProperty("gate", 45));
     next.swingPct = juce::jlimit(0, 75, (int)p.getProperty("swing", 0));
+    next.humanizePct = juce::jlimit(0, 100, (int)p.getProperty("humanize", 10));
     next.freeRun = (bool)p.getProperty("playing", false);
-    next.isPad = p.getProperty("role", "").toString() == "PAD";
+    auto roleStr = p.getProperty("role", "").toString();
+    next.isPad = (roleStr == "PAD" || roleStr == "CHORDS" || roleStr == "ATMOS");
 
     if (auto* arr = p.getProperty("steps", {}).getArray()) {
         next.steps.resize((size_t)arr->size());
@@ -56,6 +58,7 @@ void GoaMidiArchitectProcessor::updatePatternFromJson(const juce::String& jsonTe
             auto item = (*arr)[i];
             if (item.isObject()) {
                 next.steps[(size_t)i].vel = juce::jlimit(1, 127, (int)item.getProperty("vel", 100));
+                next.steps[(size_t)i].len = juce::jlimit(1, 64, (int)item.getProperty("len", 1));
                 if (auto* nArr = item.getProperty("notes", {}).getArray()) {
                     for (auto& nv : *nArr)
                         next.steps[(size_t)i].notes.push_back(juce::jlimit(0, 127, (int)nv));
@@ -69,7 +72,6 @@ void GoaMidiArchitectProcessor::updatePatternFromJson(const juce::String& jsonTe
 }
 
 void GoaMidiArchitectProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages) {
-    // Do NOT clear audio buffer so audio passing through is never muted!
     const int numSamples = buffer.getNumSamples();
 
     PatternData pat;
@@ -107,8 +109,8 @@ void GoaMidiArchitectProcessor::processBlock(juce::AudioBuffer<float>& buffer, j
     const double stepsPerBeat = (double)pat.spb / 4.0;
     const int totalSteps = (int)pat.steps.size();
     const double stepDurationSec = (60.0 / bpm) / stepsPerBeat;
-    const double gateMult = pat.isPad ? 3.5 : (pat.gatePct / 100.0);
-    const int noteDurSamples = juce::jmax(64, (int)(stepDurationSec * gateMult * currentSampleRate));
+    const double gateMult = pat.gatePct / 100.0;
+    const double swingFrac = (pat.swingPct / 100.0) * 0.35;
 
     for (int s = 0; s < numSamples; ++s) {
         for (int i = (int)activeNotes.size() - 1; i >= 0; --i) {
@@ -121,13 +123,23 @@ void GoaMidiArchitectProcessor::processBlock(juce::AudioBuffer<float>& buffer, j
         const double curPpq = dawPlaying ? (ppqStart + s * beatsPerSample) : freeRunBeatPos;
         if (!dawPlaying) freeRunBeatPos += beatsPerSample;
 
-        const int curStep = ((int)std::floor(std::abs(curPpq) * stepsPerBeat)) % totalSteps;
-        if (curStep != lastTriggeredStep && curStep >= 0 && curStep < totalSteps) {
-            lastTriggeredStep = curStep;
-            const auto& cell = pat.steps[(size_t)curStep];
+        const double rawStepFloat = std::abs(curPpq) * stepsPerBeat;
+        const int baseStep = ((int)std::floor(rawStepFloat)) % totalSteps;
+        const double stepFrac = rawStepFloat - std::floor(rawStepFloat);
+        const double targetOffset = (baseStep % 2 == 1) ? swingFrac : 0.0;
+
+        if (baseStep != lastTriggeredStep && stepFrac >= targetOffset && baseStep >= 0 && baseStep < totalSteps) {
+            lastTriggeredStep = baseStep;
+            const auto& cell = pat.steps[(size_t)baseStep];
+            const int durSamples = juce::jmax(64, (int)(stepDurationSec * (double)cell.len * gateMult * currentSampleRate));
             for (int note : cell.notes) {
-                midiMessages.addEvent(juce::MidiMessage::noteOn(1, note, (juce::uint8)cell.vel), s);
-                activeNotes.push_back({ note, noteDurSamples });
+                int vel = cell.vel;
+                if (pat.humanizePct > 0) {
+                    int delta = (int)(((baseStep * 37 + note * 13) % 21) - 10) * pat.humanizePct / 100;
+                    vel = juce::jlimit(25, 127, vel + delta);
+                }
+                midiMessages.addEvent(juce::MidiMessage::noteOn(1, note, (juce::uint8)vel), s);
+                activeNotes.push_back({ note, durSamples });
             }
         }
     }
