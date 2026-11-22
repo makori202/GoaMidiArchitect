@@ -2,9 +2,7 @@
 #include "PluginEditor.h"
 
 GoaMidiArchitectProcessor::GoaMidiArchitectProcessor()
-   : AudioProcessor(BusesProperties()
-        .withInput("Input", juce::AudioChannelSet::stereo(), true)
-        .withOutput("Output", juce::AudioChannelSet::stereo(), true)) {
+    : AudioProcessor(BusesProperties()) {
     pattern.steps.resize(32);
 }
 

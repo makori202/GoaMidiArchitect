@@ -190,7 +190,7 @@
             <div class="text-[10px] font-black tracking-widest text-[#3b0764] mt-1 uppercase">New Smart Variation</div>
           </button>
 
-          <div id="dragMidiCard" draggable="true"
+          <div id="dragMidiCard" draggable="false"
             class="drag-card rounded-lg p-3.5 flex items-center gap-3 transition">
             <div class="w-11 h-11 rounded bg-[#180d0d] border border-red-900/70 flex flex-col justify-center items-center gap-1 shrink-0">
               <div class="w-6 h-1 bg-red-500 rounded"></div>
@@ -1048,36 +1048,29 @@
     }
 
     
-    // VST3 Native Bridge (no-op in regular browser, active inside JUCE VST3)
+    // VST3 Native Bridge via pageAboutToLoad (works across all JUCE/WebView2 setups)
     function notifyVst3Sync() {
       try {
-        if (window.chrome && window.chrome.webview) {
-          const payload = {
-            bpm: state.bpm,
-            bars: state.bars,
-            spb: getStepsPerBar(),
-            gate: state.gate,
-            swing: state.swing,
-            playing: state.isPlaying,
-            role: state.role,
-            steps: state.steps
-          };
-          window.chrome.webview.postMessage(JSON.stringify({ type: "sync", payload }));
-        }
+        const payload = {
+          bpm: state.bpm,
+          bars: state.bars,
+          spb: getStepsPerBar(),
+          gate: state.gate,
+          swing: state.swing,
+          playing: state.isPlaying,
+          role: state.role,
+          steps: state.steps
+        };
+        window.location.href = "https://juce.bridge/sync?data=" + encodeURIComponent(JSON.stringify(payload));
       } catch (e) {}
     }
     function notifyVst3Drag() {
       try {
-        if (window.chrome && window.chrome.webview) {
-          const bytes = Array.from(buildMidiBytes());
-          window.chrome.webview.postMessage(JSON.stringify({
-            type: "dragMidi",
-            filename: getMidiFilename(),
-            bytes
-          }));
-        }
+        const bytes = Array.from(buildMidiBytes());
+        window.location.href = "https://juce.bridge/drag?name=" + encodeURIComponent(getMidiFilename()) + "&data=" + encodeURIComponent(JSON.stringify(bytes));
       } catch (e) {}
     }
+    setTimeout(notifyVst3Sync, 350);
 
     function renderAll() {
       renderButtons();
@@ -1144,6 +1137,7 @@
     document.getElementById("btnPrevPreset").onclick = () => loadPreset(state.presetIdx - 1);
     document.getElementById("btnNextPreset").onclick = () => loadPreset(state.presetIdx + 1);
     document.getElementById("btnSaveMid").onclick = downloadMidi;
+    document.getElementById("dragMidiCard").onmousedown = () => { notifyVst3Drag(); };
     document.getElementById("dragMidiCard").onclick = downloadMidi;
     document.getElementById("dragMidiCard").addEventListener("dragstart", (e) => {
       const bytes = buildMidiBytes();

@@ -14,7 +14,7 @@ private:
     GoaMidiArchitectProcessor& processor;
     std::unique_ptr<juce::WebBrowserComponent> webView;
 
-    void handleWebMessage(const juce::String& msg);
+    void handleBridgeUrl(const juce::String& url);
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(GoaMidiArchitectEditor)
 };

@@ -1,6 +1,25 @@
 #include "PluginEditor.h"
 #include "BinaryData.h"
 
+namespace {
+class BridgeWebView : public juce::WebBrowserComponent {
+public:
+    BridgeWebView(const Options& opts, std::function<void(const juce::String&)> cb)
+        : juce::WebBrowserComponent(opts), onBridge(std::move(cb)) {}
+
+    bool pageAboutToLoad(const juce::String& newURL) override {
+        if (newURL.startsWith("https://juce.bridge/")) {
+            if (onBridge) onBridge(newURL);
+            return false;
+        }
+        return true;
+    }
+
+private:
+    std::function<void(const juce::String&)> onBridge;
+};
+}
+
 GoaMidiArchitectEditor::GoaMidiArchitectEditor(GoaMidiArchitectProcessor& p)
     : AudioProcessorEditor(&p), processor(p) {
     auto opts = juce::WebBrowserComponent::Options{}
@@ -8,12 +27,11 @@ GoaMidiArchitectEditor::GoaMidiArchitectEditor(GoaMidiArchitectProcessor& p)
         .withWinWebView2Options(
             juce::WebBrowserComponent::Options::WinWebView2{}
                 .withUserDataFolder(juce::File::getSpecialLocation(juce::File::tempDirectory))
-        )
-        .withEventListener("message", [this](const juce::var& v) {
-            handleWebMessage(v.toString());
-        });
+        );
 
-    webView = std::make_unique<juce::WebBrowserComponent>(opts);
+    webView = std::make_unique<BridgeWebView>(opts, [this](const juce::String& url) {
+        handleBridgeUrl(url);
+    });
     addAndMakeVisible(*webView);
 
     auto html = juce::String::fromUTF8(BinaryData::ui_html, BinaryData::ui_htmlSize);
@@ -30,16 +48,20 @@ void GoaMidiArchitectEditor::resized() {
         webView->setBounds(getLocalBounds());
 }
 
-void GoaMidiArchitectEditor::handleWebMessage(const juce::String& msg) {
-    auto parsed = juce::JSON::parse(msg);
-    if (!parsed.isObject()) return;
-    auto type = parsed.getProperty("type", "").toString();
+void GoaMidiArchitectEditor::handleBridgeUrl(const juce::String& url) {
+    juce::URL u(url);
+    auto path = url.fromFirstOccurrenceOf("https://juce.bridge/", false, false).upToFirstOccurrenceOf("?", false, false);
 
-    if (type == "sync") {
-        processor.updatePatternFromJson(msg);
-    } else if (type == "dragMidi") {
-        auto filename = parsed.getProperty("filename", "goa_pattern.mid").toString();
-        if (auto* arr = parsed.getProperty("bytes", {}).getArray()) {
+    if (path == "sync") {
+        auto jsonStr = juce::URL::removeEscapeChars(url.fromFirstOccurrenceOf("data=", false, false));
+        processor.updatePatternFromJson("{\"type\":\"sync\",\"payload\":" + jsonStr + "}");
+    } else if (path == "drag") {
+        auto filename = juce::URL::removeEscapeChars(
+            url.fromFirstOccurrenceOf("name=", false, false).upToFirstOccurrenceOf("&", false, false));
+        if (filename.isEmpty()) filename = "goa_pattern.mid";
+        auto arrStr = juce::URL::removeEscapeChars(url.fromFirstOccurrenceOf("data=", false, false));
+        auto parsed = juce::JSON::parse(arrStr);
+        if (auto* arr = parsed.getArray()) {
             juce::MemoryBlock mb;
             for (auto& b : *arr) {
                 juce::uint8 byteVal = (juce::uint8)(int)b;
