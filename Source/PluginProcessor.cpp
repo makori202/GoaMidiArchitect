@@ -2,10 +2,17 @@
 #include "PluginEditor.h"
 
 GoaMidiArchitectProcessor::GoaMidiArchitectProcessor()
- : AudioProcessor(BusesProperties()
+    : AudioProcessor(BusesProperties()
         .withInput("Input", juce::AudioChannelSet::stereo(), true)
         .withOutput("Output", juce::AudioChannelSet::stereo(), true)) {
     pattern.steps.resize(32);
+    // Default KBBB F-Phrygian Bass pattern so MIDI Out works immediately on load
+    for (int i = 0; i < 32; ++i) {
+        if (i % 4 != 0) {
+            pattern.steps[(size_t)i].notes = { (i >= 28) ? 53 : 41 };
+            pattern.steps[(size_t)i].vel = 100;
+        }
+    }
 }
 
 void GoaMidiArchitectProcessor::prepareToPlay(double sampleRate, int) {
@@ -19,7 +26,10 @@ void GoaMidiArchitectProcessor::releaseResources() {
     activeNotes.clear();
 }
 
-bool GoaMidiArchitectProcessor::isBusesLayoutSupported(const BusesLayout&) const {
+bool GoaMidiArchitectProcessor::isBusesLayoutSupported(const BusesLayout& layouts) const {
+    if (layouts.getMainOutputChannelSet() != juce::AudioChannelSet::stereo()
+        && !layouts.getMainOutputChannelSet().isDisabled())
+        return false;
     return true;
 }
 
@@ -59,7 +69,7 @@ void GoaMidiArchitectProcessor::updatePatternFromJson(const juce::String& jsonTe
 }
 
 void GoaMidiArchitectProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages) {
-    buffer.clear();
+    // Do NOT clear audio buffer so audio passing through is never muted!
     const int numSamples = buffer.getNumSamples();
 
     PatternData pat;
@@ -111,7 +121,7 @@ void GoaMidiArchitectProcessor::processBlock(juce::AudioBuffer<float>& buffer, j
         const double curPpq = dawPlaying ? (ppqStart + s * beatsPerSample) : freeRunBeatPos;
         if (!dawPlaying) freeRunBeatPos += beatsPerSample;
 
-        const int curStep = ((int)std::floor(curPpq * stepsPerBeat)) % totalSteps;
+        const int curStep = ((int)std::floor(std::abs(curPpq) * stepsPerBeat)) % totalSteps;
         if (curStep != lastTriggeredStep && curStep >= 0 && curStep < totalSteps) {
             lastTriggeredStep = curStep;
             const auto& cell = pat.steps[(size_t)curStep];

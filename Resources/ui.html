@@ -868,6 +868,7 @@
       state.playStep = 0;
       document.getElementById("btnPlay").textContent = "■ STOP";
       document.getElementById("btnPlay").classList.replace("bg-red-600", "bg-purple-600");
+      notifyVst3Sync();
 
       const stepTick = () => {
         const spb = getStepsPerBar();
@@ -900,6 +901,7 @@
       state.playStep = -1;
       document.getElementById("btnPlay").textContent = "▶ PLAY / FREE RUN";
       document.getElementById("btnPlay").classList.replace("bg-purple-600", "bg-red-600");
+      notifyVst3Sync();
       renderPianoRoll();
     }
 
