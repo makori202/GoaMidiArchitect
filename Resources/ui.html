@@ -486,47 +486,120 @@
     }
 
     // =========================================================================
-    // DIVERSE MULTI-BAR ROLE-AWARE GENERATOR (GOD MODE)
+    // AUTHENTIC GENRE-ACCURATE MUSICAL PATTERN ENGINE (RESEARCH-GROUNDED)
+    // - Bass: True KBBB Rolling, Gallop, Offbeat Prog, Triplet, Uplifting Chord-Root
+    // - Goa 303/Lead: Phrygian Dom (root, b2, 3, 5) + offbeat accents (2,6,10,13)
+    // - Uplifting/Pad/Chords: Real i-VI-III-VII / i-VII-VI-VII progressions + Arp chord-following
+    // - Dark/Forest & Psy-Tech: Syncopated b2/tritone tension & dotted-16th grooves
     // =========================================================================
+    const CHORD_PROGS = {
+      0: [[0,5,4,3], [0,1,4,0], [0,5,6,4], [0,3,5,4]], // Full-On (Phrygian)
+      1: [[0,1,0,4], [0,1,6,4], [0,4,1,0], [0,3,1,4]], // Goa (Phrygian Dom b2 tension)
+      2: [[0,1,0,1], [0,4,1,0], [0,3,1,0], [0,1,4,1]], // Dark/Forest (Drone + b2)
+      3: [[0,5,3,4], [0,3,5,6], [0,5,4,5], [0,2,5,4]], // Prog Psy (Deep Minor)
+      4: [[0,5,2,6], [5,3,0,4], [0,6,5,6], [0,3,5,4]], // Uplifting (i-VI-III-VII anthems)
+      5: [[0,3,0,4], [0,6,4,3], [0,1,3,0], [0,4,6,0]], // Psy-Tech (Dorian/Minimal)
+    };
+
+    // Curated 16-step rhythmic & degree templates per Style & Role
+    // deg: scale degree (null = rest), acc: accent boost, len: step hold
+    const ACID_TEMPLATES = {
+      0: [ // Full-On
+        [0,null,7,1, null,4,null,6, 0,null,7,null, 0,8,null,4],
+        [0,0,7,null, 1,0,8,null, 0,7,10,null, 7,4,1,null],
+        [0,null,1,null, 4,null,7,null, 8,null,10,null, 12,10,7,null],
+        [0,4,7,null, 0,4,8,null, 1,5,8,null, 7,4,1,0],
+      ],
+      1: [ // Goa (Myloops Phrygian Dom 303: root, b2, 3, oct-up, 5, b2, root, 4)
+        [0,1,0,9, 4,1,0,3, 0,1,7,9, 4,1,0,7],
+        [0,1,4,null, 7,4,1,null, 0,1,4,7, 8,7,4,null],
+        [0,null,7,8, null,4,7,null, 1,4,8,null, 11,8,7,null],
+        [4,1,0,null, 7,4,1,null, 8,7,4,null, 11,8,4,1],
+      ],
+      2: [ // Dark / Forest
+        [0,1,null,6, null,0,7,1, null,6,null,0, 5,1,null,3],
+        [0,null,1,null, null,6,null,1, 0,null,3,1, null,7,6,null],
+        [6,1,0,null, 7,2,1,null, 8,3,0,null, 11,6,1,null],
+        [0,null,null,1, 6,null,null,0, 1,null,7,null, 6,1,0,null],
+      ],
+      3: [ // Prog Psy
+        [0,null,4,null, 7,null,4,null, 0,null,5,null, 7,null,10,null],
+        [null,0,null,7, null,4,null,7, null,0,null,8, null,7,4,null],
+        [0,null,null,7, null,4,null,0, null,null,7,null, 8,7,4,null],
+      ],
+      4: [ // Uplifting
+        [0,4,7,null, 0,4,7,null, 5,9,12,null, 4,7,11,null],
+        [0,null,7,4, 0,null,7,4, 2,null,9,5, 4,null,11,7],
+        [7,7,4,0, 7,7,4,0, 8,8,5,1, 9,9,7,4],
+      ],
+      5: [ // Psy-Tech
+        [0,null,6,null, 0,7,null,4, 0,null,6,null, 7,4,2,null],
+        [null,0,2,6, null,0,2,7, null,0,2,6, null,4,2,null],
+        [0,0,null,6, 7,null,0,0, null,4,6,null, 2,0,null,7],
+      ],
+    };
+
+    const LEAD_TEMPLATES = {
+      0: [ // Full-On
+        [4,null,7,4, null,8,7,null, 4,null,7,null, 9,7,4,null],
+        [7,null,null,7, 8,null,7,null, 4,null,null,4, 5,4,1,null],
+        [0,7,null,1, 8,null,4,7, null,10,8,null, 7,4,1,null],
+      ],
+      1: [ // Goa
+        [0,1,4,null, 7,8,null,4, 2,null,7,9, 11,null,7,null],
+        [4,5,7,null, 8,7,5,4, 1,null,4,5, 7,null,4,null],
+        [7,null,8,7, 4,null,5,4, 1,null,4,7, 8,11,7,null],
+      ],
+      2: [ // Dark / Forest
+        [7,null,1,7, null,9,2,null, 11,8,null,1, 10,null,4,null],
+        [1,null,null,6, null,null,2,1, null,null,7,null, 8,6,1,null],
+        [0,6,null,1, 7,null,2,8, null,3,9,null, 6,1,0,null],
+      ],
+      3: [ // Prog Psy
+        [4,null,null,7, null,4,null,2, null,null,4,7, null,5,4,null],
+        [7,null,null,null, 4,null,7,null, 8,null,null,null, 7,4,2,null],
+        [0,null,4,null, 7,null,null,4, 5,null,4,null, 2,null,0,null],
+      ],
+      4: [ // Uplifting Anthems
+        [7,null,9,7, 4,null,7,null, 5,null,7,5, 4,null,2,null],
+        [0,null,4,7, 9,null,7,null, 5,null,7,9, 11,null,7,null],
+        [11,null,9,7, 9,null,7,4, 5,null,7,9, 7,null,4,null],
+      ],
+      5: [ // Psy-Tech
+        [0,null,null,6, null,null,7,null, 0,null,null,4, null,2,null,null],
+        [6,null,7,null, null,4,null,2, 0,null,null,6, null,7,4,null],
+        [null,0,null,6, null,7,null,4, null,2,null,0, null,6,4,null],
+      ],
+    };
+
     function generateSmartPattern(saveUndo = true) {
       if (saveUndo && state.steps.length) pushUndo();
       const total = getTotalSteps();
       const spb = getStepsPerBar();
-      const rng = mulberry32(state.variation * 7919 + state.style * 131 + state.key * 37 + state.role.length * 19);
+      const rng = mulberry32(state.variation * 7919 + state.style * 131 + state.key * 37);
       const dens = state.density / 100;
       const mov  = state.movement / 100;
       const dyn  = state.dynamics / 100;
       const out  = new Array(total).fill(null);
 
-      // 1. PAD / CHORDS / ATMOS -> LONG SUSTAINED HORIZONTAL BARS (like image_c5e425!)
+      const progList = CHORD_PROGS[state.style] || CHORD_PROGS[0];
+      const prog = progList[state.variation % progList.length];
+
+      // 1. PAD / CHORDS / ATMOS -> Authentic progressions with long sustained horizontal bars!
       if (state.role === "PAD" || state.role === "CHORDS" || state.role === "ATMOS") {
         const chordSpacing = state.role === "CHORDS"
-          ? (dens > 0.7 ? Math.max(4, Math.floor(spb / 2)) : spb)
+          ? (dens > 0.65 ? Math.max(4, Math.floor(spb / 2)) : spb)
           : (dens < 0.35 ? spb * 2 : spb);
         const holdSteps = Math.max(2, Math.round(chordSpacing * (state.gate / 100)));
-        const progs = [
-          [0, 5, 4, 2],
-          [0, 1, 3, 4],
-          [0, 3, 5, 4],
-          [0, 4, 1, 0],
-          [5, 3, 0, 4],
-          [0, 2, 5, 3],
-        ];
-        const prog = progs[Math.floor(rng() * progs.length)];
-        const invShift = Math.floor(rng() * 3);
+        const invShift = Math.floor(mov * 2.9);
 
         for (let g = 0; g < total; g += chordSpacing) {
           const chordIdx = Math.floor(g / chordSpacing) % prog.length;
           const deg = prog[chordIdx];
-          const spread = mov > 0.65 ? [0, 2, 4, 7] : (mov > 0.3 ? [0, 2, 4, 6] : [0, 2, 4]);
-          const notes = spread.map((sOff, nIdx) => {
-            const inv = (nIdx < invShift && mov > 0.4) ? 7 : 0;
-            return getScalePitch(deg + sOff + inv);
-          });
-          if (state.role === "ATMOS") {
-            notes.push(getScalePitch(deg + 14)); // high cosmic shimmer
-          }
-          const vel = Math.max(45, Math.min(122, Math.round(88 + (rng() - 0.5) * 30 * dyn)));
+          const triad = mov > 0.6 ? [0, 2, 4, 7] : [0, 2, 4];
+          const notes = triad.map((off, idx) => getScalePitch(deg + off + (idx < invShift ? 7 : 0)));
+          if (state.role === "ATMOS") notes.push(getScalePitch(deg + 14));
+          const vel = Math.max(55, Math.min(120, Math.round(90 + (rng() - 0.5) * 24 * dyn)));
           out[g] = { notes: [...new Set(notes)], vel, len: Math.min(holdSteps, total - g) };
         }
         state.steps = out;
@@ -535,21 +608,69 @@
         return;
       }
 
-      // 2. FX / ZAP -> SPACED EFFECTS, RISERS, GLITCH DROPS
+      // 2. BASS -> Authentic Style-Locked Grooves (KBBB Rolling / Gallop / Offbeat / Uplifting Progression)
+      if (state.role === "BASS") {
+        for (let b = 0; b < state.bars; b++) {
+          const barRoot = (state.style === 4 || state.style === 3) ? prog[b % prog.length] : 0; // Uplifting/Prog follows chord roots!
+          const isTurnaroundBar = (b === state.bars - 1 || b % 2 === 1);
+          for (let s = 0; s < spb; s++) {
+            const g = b * spb + s;
+            const pos16 = Math.floor((s * 16) / spb);
+
+            if (state.style === 3 && dens < 0.6) {
+              // Prog Psy: Classic Offbeat (steps 2, 6, 10, 14)
+              if (state.grid === "1/16" && pos16 % 4 !== 2) continue;
+              if (state.grid === "1/8" && s % 2 !== 1) continue;
+            } else if (state.style === 4) {
+              // Uplifting Trance: Driving / Gallop / Octave offbeats
+              if (pos16 % 4 === 0 && dens < 0.85) continue;
+            } else {
+              // Full-On / Goa / Dark / Psy-Tech: True KBBB Kick-Gap (beat 1 of each quarter is silent!)
+              const isKick = (state.grid === "1/16" && s % 4 === 0) ||
+                             (state.grid === "1/16T" && s % 3 === 0) ||
+                             (state.grid === "1/8" && s % 2 === 0);
+              if (isKick) continue;
+              if (dens < 0.55 && s % 4 === 1) continue; // Gallop when density < 55%
+            }
+
+            let deg = barRoot;
+            // Movement adds authentic octave / 5th / b2 fills ONLY on turnaround or offbeat accents
+            if (isTurnaroundBar && s >= spb - 2 && mov > 0.25) {
+              deg = barRoot + (mov > 0.65 ? 7 : 4);
+            } else if (state.style === 4 && pos16 % 4 === 2 && mov > 0.35) {
+              deg = barRoot + 7; // Uplifting octave bass!
+            } else if (state.style === 1 && pos16 === 14 && mov > 0.45) {
+              deg = 1; // Goa b2 turnaround!
+            }
+
+            // Authentic KBBB velocity shaping: first bass note after kick slightly softer (-10)
+            const firstAfterKick = (s % 4 === 1) ? -Math.round(12 * dyn) : 0;
+            const accent = (s % 4 === 2) ? Math.round(10 * dyn) : 0;
+            const vel = Math.max(55, Math.min(127, 102 + firstAfterKick + accent));
+            out[g] = { notes: [getScalePitch(deg)], vel, len: 1 };
+          }
+        }
+        state.steps = out;
+        syncBank();
+        renderAll();
+        return;
+      }
+
+      // 3. FX / ZAP -> Genre-Appropriate Risers & Spaced Zaps
       if (state.role === "FX / ZAP") {
-        const fxMode = Math.floor(rng() * 3); // 0=Riser, 1=Zaps, 2=Glitch Drops
+        const fxPat = (state.variation % 3);
         for (let b = 0; b < state.bars; b++) {
           for (let s = 0; s < spb; s++) {
             const g = b * spb + s;
-            if (fxMode === 0 && s % 2 === 0 && rng() < dens * 1.1) {
+            if (fxPat === 0 && s % 4 === 0) {
               const deg = Math.min(14, Math.floor((g / total) * 14));
-              out[g] = { notes: [getScalePitch(deg)], vel: Math.round(70 + (g / total) * 50), len: 2 };
-            } else if (fxMode === 1 && (s === 0 || s === 6 || s === 12) && rng() < dens * 1.4) {
-              const deg = 7 + Math.floor(rng() * 8);
-              out[g] = { notes: [getScalePitch(deg)], vel: Math.round(95 + (rng() - 0.5) * 30 * dyn), len: 3 };
-            } else if (fxMode === 2 && rng() < dens * 0.45) {
-              const deg = Math.floor(rng() * 15);
-              out[g] = { notes: [getScalePitch(deg)], vel: Math.round(80 + rng() * 40 * dyn), len: 1 };
+              out[g] = { notes: [getScalePitch(deg)], vel: Math.round(75 + (g / total) * 48), len: 2 };
+            } else if (fxPat === 1 && (s === 0 || s === 10)) {
+              const deg = (s === 0) ? 14 : 11;
+              out[g] = { notes: [getScalePitch(deg)], vel: 112, len: 4 };
+            } else if (fxPat === 2 && (s === 2 || s === 6 || s === 14)) {
+              const deg = 7 + ((b + s) % 8);
+              out[g] = { notes: [getScalePitch(deg)], vel: 105, len: 2 };
             }
           }
         }
@@ -559,37 +680,32 @@
         return;
       }
 
-      // 3. DRUMS -> SUB-CATEGORIES (FULL KIT, KICK, SNARE / CLAP, CH / OH HATS, TRIBAL PERC)
+      // 4. DRUMS -> Split Sub-Categories (FULL KIT, KICK, SNARE / CLAP, CH / OH HATS, TRIBAL PERC)
       if (state.role === "DRUMS") {
-        const base = 36; // C1 Kick
+        const base = 36;
         const sub = state.drumSub;
-        const styleFill = Math.floor(rng() * 4);
+        const hatMode = state.variation % 3;
         for (let b = 0; b < state.bars; b++) {
           const isLastBar = (b === state.bars - 1);
           for (let s = 0; s < spb; s++) {
             const g = b * spb + s;
             const notes = [];
-            if ((sub === "FULL KIT" || sub === "KICK") && (s % 4 === 0)) {
-              notes.push(base); // 36 Kick
-              if (isLastBar && s === spb - 2 && rng() < 0.5) notes.push(base);
-            }
+            if ((sub === "FULL KIT" || sub === "KICK") && (s % 4 === 0)) notes.push(base);
             if ((sub === "FULL KIT" || sub === "SNARE / CLAP")) {
-              if (s === 4 || s === 12) notes.push(styleFill % 2 === 0 ? base + 2 : base + 3); // 38 Snare / 39 Clap
-              if (isLastBar && s >= spb - 4 && rng() < dens * 0.8) notes.push(base + 2);
+              if (s === 4 || s === 12) notes.push(state.style === 4 ? base + 2 : base + 3);
+              if (isLastBar && s >= spb - 4 && (s % 2 === 0 || state.style === 4)) notes.push(base + 2);
             }
             if ((sub === "FULL KIT" || sub === "CH / OH HATS")) {
-              if (s % 4 === 2) notes.push(base + 10); // 46 Open Hat
-              else if ((sub === "CH / OH HATS" || s % 2 === 1) && rng() < dens * 0.85) notes.push(base + 6); // 42 Closed Hat
+              if (s % 4 === 2) notes.push(base + 10); // Open Hat on offbeat
+              else if (hatMode === 0 && s % 2 === 1) notes.push(base + 6);
+              else if (hatMode === 1 && s % 4 !== 0) notes.push(base + 6);
+              else if (hatMode === 2 && (s % 4 === 1 || s % 4 === 3)) notes.push(base + 6);
             }
             if ((sub === "FULL KIT" || sub === "TRIBAL PERC")) {
-              if (s % 4 !== 0 && rng() < dens * (sub === "TRIBAL PERC" ? 0.75 : 0.35)) {
-                const percOffsets = [5, 7, 9, 11, 12, 14];
-                notes.push(base + percOffsets[Math.floor(rng() * percOffsets.length)]);
-              }
+              if (s === 3 || s === 6 || s === 11 || s === 14) notes.push(base + 7 + ((s + b) % 5));
             }
             if (notes.length) {
-              const accent = (s % 4 === 0 || s % 4 === 2) ? 18 : 0;
-              const vel = Math.max(40, Math.min(127, Math.round(92 + accent + (rng() - 0.5) * 40 * dyn)));
+              const vel = Math.max(55, Math.min(127, (s % 4 === 0 || s % 4 === 2) ? 112 : Math.round(92 - 22 * dyn)));
               out[g] = { notes: [...new Set(notes)], vel, len: 1 };
             }
           }
@@ -600,28 +716,23 @@
         return;
       }
 
-      // 4. BASS -> 5 DISTINCT PSY/GOA/PROG GROOVES + MULTI-BAR FILLS
-      if (state.role === "BASS") {
-        const bassStyle = Math.floor(rng() * 5);
+      // 5. ARP -> Chord-Following Trance Arpeggios!
+      if (state.role === "ARP") {
+        const arpShapes = [
+          [0, 2, 4, 7, 4, 2, 0, 4],
+          [0, 4, 7, 2, 7, 4, 0, 7],
+          [7, 4, 2, 0, 2, 4, 7, 9],
+          [0, 1, 4, 7, 4, 1, 0, 4],
+        ];
+        const shape = arpShapes[state.variation % arpShapes.length];
         for (let b = 0; b < state.bars; b++) {
-          const isTurnaroundBar = (b % 2 === 1 || b === state.bars - 1);
+          const chordRoot = prog[b % prog.length];
           for (let s = 0; s < spb; s++) {
             const g = b * spb + s;
-            const isKickBeat = (state.grid === "1/16" && s % 4 === 0) ||
-                               (state.grid === "1/16T" && s % 3 === 0) ||
-                               (state.grid === "1/8" && s % 2 === 0);
-            if (isKickBeat && state.style !== 4) continue;
-            if (bassStyle === 1 && s % 4 !== 2 && state.grid === "1/16") continue; // Offbeat Psy!
-            if (bassStyle === 2 && s % 4 === 1 && rng() < 0.7) continue; // Gallop
-            if (rng() > dens) continue;
-
-            let deg = 0;
-            if (isTurnaroundBar && s >= spb - 4 && rng() < mov * 0.85) {
-              deg = rng() < 0.65 ? 7 : (rng() < 0.5 ? 4 : 1);
-            } else if (rng() < mov * 0.35) {
-              deg = rng() < 0.7 ? 7 : 4;
-            }
-            const vel = Math.max(45, Math.min(127, Math.round(96 + (s % 4 === 2 ? 12 : 0) + (rng() - 0.5) * 34 * dyn)));
+            if (dens < 0.7 && s % 4 === 0) continue;
+            if (dens < 0.45 && s % 2 === 1) continue;
+            const deg = chordRoot + shape[s % shape.length];
+            const vel = Math.max(55, Math.min(127, (s % 4 === 0) ? 114 : Math.round(94 - 16 * dyn)));
             out[g] = { notes: [getScalePitch(deg)], vel, len: 1 };
           }
         }
@@ -631,52 +742,26 @@
         return;
       }
 
-      // 5. ACID / LEAD / PLUCK / ARP -> RICH MULTI-BAR MOTIF + VARIATION PER BAR
-      const contourType = Math.floor(rng() * 5); // 0=Call&Resp, 1=SpiralUp, 2=SpiralDown, 3=AcidHook, 4=SyncopatedStab
-      const barMotifs = [];
-      for (let mIdx = 0; mIdx < 2; mIdx++) {
-        const m = new Array(spb).fill(null);
-        let curDeg = mIdx === 0 ? 0 : Math.floor(rng() * 5);
-        const span = Math.max(1, Math.round(1 + mov * 5));
-        for (let s = 0; s < spb; s++) {
-          if (contourType === 4 && s % 3 !== 0 && rng() < 0.6) continue;
-          if (rng() > dens) continue;
-          if (state.role === "ARP") {
-            const arps = [
-              [0,2,4,7,4,2,1,5],
-              [0,4,7,11,7,4,0,7],
-              [0,1,4,7,8,11,8,4],
-              [7,4,2,0,4,7,9,11]
-            ];
-            const aPat = arps[contourType % arps.length];
-            curDeg = aPat[s % aPat.length] + (rng() < mov * 0.45 ? 7 : 0);
-          } else if (contourType === 1) {
-            curDeg = (curDeg + (rng() < 0.7 ? 1 : 2)) % 14;
-          } else if (contourType === 2) {
-            curDeg = (curDeg - (rng() < 0.7 ? 1 : 2) + 14) % 14;
-          } else {
-            curDeg = Math.max(0, Math.min(14, curDeg + Math.round((rng() * 2 - 1) * span)));
-          }
-          const len = (state.role === "LEAD" && s % 4 === 0 && rng() < 0.35) ? 2 : 1;
-          const vel = Math.max(45, Math.min(127, Math.round(90 + (s % 4 === 0 ? 18 : 0) + (rng() - 0.5) * 42 * dyn)));
-          m[s] = { deg: curDeg, vel, len };
-        }
-        barMotifs.push(m);
-      }
-
+      // 6. ACID / LEAD / PLUCK -> Curated Genre-Accurate Templates + Musical Bar 2/4 Turnaround!
+      const bank = (state.role === "ACID") ? (ACID_TEMPLATES[state.style] || ACID_TEMPLATES[0])
+                                           : (LEAD_TEMPLATES[state.style] || LEAD_TEMPLATES[0]);
+      const basePat = bank[state.variation % bank.length];
       for (let b = 0; b < state.bars; b++) {
-        const m = barMotifs[b % 2];
-        const barShift = (b >= 2 && mov > 0.5) ? (b % 2 === 0 ? 2 : -1) : 0;
+        const chordShift = (state.style === 4 && b > 0) ? prog[b % prog.length] : 0;
+        const isLastBar = (b === state.bars - 1 && state.bars >= 2);
         for (let s = 0; s < spb; s++) {
-          const item = m[s];
-          if (!item) continue;
-          let deg = Math.max(0, Math.min(14, item.deg + barShift));
-          if (b === state.bars - 1 && s >= spb - 3) deg = (deg + 4) % 15;
-          out[b * spb + s] = {
-            notes: [getScalePitch(deg)],
-            vel: item.vel,
-            len: Math.min(item.len || 1, total - (b * spb + s))
-          };
+          const g = b * spb + s;
+          const rawDeg = basePat[s % basePat.length];
+          if (rawDeg === null) continue;
+          if (dens < 0.5 && s % 2 === 1) continue;
+
+          // Movement scales melodic range smoothly from root-locked (0%) to full phrase (100%)
+          let deg = Math.round(rawDeg * (0.2 + 0.8 * mov)) + chordShift;
+          if (isLastBar && s >= spb - 3) deg += 2; // Musical turnaround
+          const isAccent = (s === 2 || s === 6 || s === 10 || s === 13);
+          const vel = isAccent ? 120 : Math.max(55, Math.round(88 - 20 * dyn));
+          const len = (state.role === "LEAD" && isAccent && s < spb - 1 && basePat[(s + 1) % 16] === null) ? 2 : 1;
+          out[g] = { notes: [getScalePitch(deg)], vel, len: Math.min(len, total - g) };
         }
       }
 
