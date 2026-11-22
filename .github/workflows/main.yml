@@ -13,15 +13,14 @@ jobs:
         run: nuget install Microsoft.Web.WebView2 -OutputDirectory packages -ExcludeVersion
       - name: Configure CMake
         run: |
+          $inc = ("$env:GITHUB_WORKSPACE/packages/Microsoft.Web.WebView2/build/native/include") -replace '\\','/'
+          $lib = ("$env:GITHUB_WORKSPACE/packages/Microsoft.Web.WebView2/build/native/x64") -replace '\\','/'
           if (Test-Path "GoaMidiArchitect_VST3/CMakeLists.txt") {
-            cmake -S GoaMidiArchitect_VST3 -B build
+            cmake -S GoaMidiArchitect_VST3 -B build "-DCMAKE_CXX_FLAGS=/I$inc" "-DCMAKE_SHARED_LINKER_FLAGS=/LIBPATH:$lib" "-DCMAKE_EXE_LINKER_FLAGS=/LIBPATH:$lib"
           } else {
-            cmake -B build
+            cmake -B build "-DCMAKE_CXX_FLAGS=/I$inc" "-DCMAKE_SHARED_LINKER_FLAGS=/LIBPATH:$lib" "-DCMAKE_EXE_LINKER_FLAGS=/LIBPATH:$lib"
           }
       - name: Build VST3
-        env:
-          INCLUDE: ${{ github.workspace }}\packages\Microsoft.Web.WebView2\build\native\include;${{ env.INCLUDE }}
-          LIB: ${{ github.workspace }}\packages\Microsoft.Web.WebView2\build\native\x64;${{ env.LIB }}
         run: cmake --build build --config Release --target GoaMidiArchitect_VST3 -j 4
       - name: Upload VST3 Artifact
         uses: actions/upload-artifact@v4
