@@ -13,6 +13,8 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(JUCE)
 
+link_directories("${CMAKE_BINARY_DIR}/../packages/Microsoft.Web.WebView2/build/native/x64")
+
 juce_add_plugin(GoaMidiArchitect
     COMPANY_NAME "GoaArchitect"
     IS_SYNTH FALSE
@@ -41,10 +43,6 @@ target_compile_definitions(GoaMidiArchitect PUBLIC
     JUCE_USE_WIN_WEBVIEW2=1
     JUCE_USE_WIN_WEBVIEW2_WITH_STATIC_LINKING=1
     JUCE_VST3_CAN_REPLACE_VST2=0
-)
-
-target_link_directories(GoaMidiArchitect PRIVATE
-    "${CMAKE_BINARY_DIR}/../packages/Microsoft.Web.WebView2/build/native/x64"
 )
 
 target_link_libraries(GoaMidiArchitect PRIVATE
