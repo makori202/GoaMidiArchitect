@@ -9,6 +9,8 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Install WebView2 SDK
+        run: nuget install Microsoft.Web.WebView2 -OutputDirectory packages -ExcludeVersion
       - name: Configure CMake
         run: |
           if (Test-Path "GoaMidiArchitect_VST3/CMakeLists.txt") {
@@ -17,6 +19,9 @@ jobs:
             cmake -B build
           }
       - name: Build VST3
+        env:
+          INCLUDE: ${{ github.workspace }}\packages\Microsoft.Web.WebView2\build\native\include;${{ env.INCLUDE }}
+          LIB: ${{ github.workspace }}\packages\Microsoft.Web.WebView2\build\native\x64;${{ env.LIB }}
         run: cmake --build build --config Release --target GoaMidiArchitect_VST3 -j 4
       - name: Upload VST3 Artifact
         uses: actions/upload-artifact@v4
